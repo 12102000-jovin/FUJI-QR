@@ -5,6 +5,8 @@ import About from "./components/About";
 import PDC_QR from "./components/PDC-QR";
 import PDC_QRList from "./components/PDC-QRList";
 import PDC_Dashboard from "./components/PDCDashboard";
+import SubAssemblyDashboard from "./components/SubAssemblyDashboard";
+import Test from "./components/Test";
 
 function App() {
   return (
@@ -28,6 +30,9 @@ function App() {
               <li>
                 <Link to="/PDC-Dashboard">PDC Dashboard</Link>
               </li>
+              <li>
+                <Link to="/Testing"> Test </Link>
+              </li>
             </ul>
           </nav>
         </header>
@@ -39,6 +44,11 @@ function App() {
             <Route path="/PDC-QR" element={<PDC_QR />} />
             <Route path="/PDC-QRList" element={<PDC_QRList />} />
             <Route path="/PDC-Dashboard" element={<PDC_Dashboard />} />
+            <Route
+              path="/SubAssemblyDashboard"
+              element={<SubAssemblyDashboard />}
+            />
+            <Route path="/Testing" element={<Test />} />
           </Routes>
         </div>
       </Router>

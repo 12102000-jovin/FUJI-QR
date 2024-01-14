@@ -1,4 +1,3 @@
-import react from "react";
 import PDCDataDisplay from "./PDCDataDisplay";
 import axios from "axios";
 

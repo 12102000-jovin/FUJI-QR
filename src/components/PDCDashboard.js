@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import QRCode from "qrcode.react";
 import { useLocation } from "react-router-dom";
 import {
   Table,
@@ -9,7 +10,15 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
 } from "@mui/material";
+import QrCodeIcon from "@mui/icons-material/QrCode";
+import LaunchIcon from "@mui/icons-material/Launch";
 
 const PDCDashboard = () => {
   const location = useLocation();
@@ -17,6 +26,10 @@ const PDCDashboard = () => {
   const customId = searchParams.get("id");
   const [subAssemblyName, setSubAssemblyName] = useState("");
   const [subAssemblies, setSubAssemblies] = useState([]);
+
+  const [qrCodeData, setQrCodeData] = useState(null);
+  const [showQrCode, setShowQrCode] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   useEffect(() => {
     // Fetch sub-assemblies for the PDC based on the custom ID
@@ -44,6 +57,7 @@ const PDCDashboard = () => {
         `http://localhost:3001/api/subAssembly/pdc/${customId}/add-subassembly`,
         {
           name: subAssemblyName,
+          link: `http://localhost:3000/subAssemblyDashboard?id=${customId}&subAssemblyName=${subAssemblyName}`,
         }
       );
 
@@ -65,11 +79,28 @@ const PDCDashboard = () => {
     }
   };
 
+  const showQrCodes = (link) => {
+    setQrCodeData(link);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleLinks = (link) => {
+    window.location.href = link;
+  };
+
   return (
     <div>
       <h2>PDC Dashboard</h2>
-      <p>ID from URL: {customId}</p>
-      <p>Generate Sub-Assembly QR Code Here</p>
+      <p>
+        <strong>ID from URL:</strong> {customId}
+      </p>
+      <p>
+        <strong>Generate Sub-Assembly QR Code Here</strong>
+      </p>
       <form>
         <label>
           Sub-Assembly Name:
@@ -83,6 +114,9 @@ const PDCDashboard = () => {
           Generate Sub-Assembly
         </button>
       </form>
+      <br />
+      <br /> <br />
+      <br />
       <div>
         <h3>Sub-Assemblies for {customId}</h3>
         <Paper style={{ margin: "32px" }}>
@@ -90,10 +124,13 @@ const PDCDashboard = () => {
             <Table>
               <TableHead style={{ backgroundColor: "#043f9d" }}>
                 <TableRow>
-                  <TableCell style={{ width: "80%", color: "white" }}>
+                  <TableCell style={{ width: "35%", color: "white" }}>
                     Sub-Assembly Name
                   </TableCell>
-                  <TableCell style={{ width: "20%", color: "white" }}>
+                  <TableCell style={{ width: "35%", color: "white" }}>
+                    Link
+                  </TableCell>
+                  <TableCell style={{ width: "30%", color: "white" }}>
                     Action
                   </TableCell>
                 </TableRow>
@@ -102,10 +139,52 @@ const PDCDashboard = () => {
                 {subAssemblies.map((subAssembly) => (
                   <TableRow key={subAssembly._id}>
                     <TableCell>{subAssembly.name}</TableCell>
+                    <TableCell>{subAssembly.link}</TableCell>
+                    <TableCell>
+                      <IconButton
+                        aria-label="QR"
+                        size="small"
+                        style={{ color: "navy" }}
+                        onClick={() => showQrCodes(subAssembly.link)}
+                      >
+                        {" "}
+                        <QrCodeIcon fontSize="small" />
+                      </IconButton>
+                      <IconButton
+                        aria-label="links"
+                        size="small"
+                        style={{ color: "smokewhite" }}
+                        onClick={() => handleLinks(subAssembly.link)}
+                      >
+                        <LaunchIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            <Dialog open={openModal} onClose={handleCloseModal}>
+              <DialogTitle style={{ textAlign: "center" }}>
+                <strong>QR Code</strong>
+              </DialogTitle>
+              <DialogContent>
+                <QRCode
+                  value={qrCodeData}
+                  size={256}
+                  imageSettings={{
+                    src: "Images/FE-logo.png",
+                    excavate: true,
+                    width: 60,
+                    height: 35,
+                  }}
+                />
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseModal} color="primary">
+                  Close
+                </Button>
+              </DialogActions>
+            </Dialog>
           </TableContainer>
         </Paper>
       </div>

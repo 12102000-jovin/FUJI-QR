@@ -20,7 +20,7 @@ router.post("/generateSubAssembly", async (req, res) => {
 // POST method for adding SubAssembly to a specific PDC
 router.post("/pdc/:customId/add-subassembly", async (req, res) => {
   const { customId } = req.params;
-  const { name } = req.body;
+  const { name, link } = req.body;
 
   try {
     // Find the PDC by custom ID
@@ -33,7 +33,7 @@ router.post("/pdc/:customId/add-subassembly", async (req, res) => {
     }
 
     // Create a new SubAssembly
-    const subAssembly = new subAssemblyModel({ name });
+    const subAssembly = new subAssemblyModel({ name, link });
     const savedSubAssembly = await subAssembly.save();
 
     // Add the SubAssembly to the PDC

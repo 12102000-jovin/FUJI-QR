@@ -25,7 +25,22 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import LaunchIcon from "@mui/icons-material/Launch";
-import LibraryAddIcon from "@mui/icons-material/LibraryAdd";
+
+const CustomQRCode = ({ value, text }) => (
+  <div>
+    <QRCode
+      value={value}
+      size={256}
+      imageSettings={{
+        src: "Images/FE-logo.png",
+        excavate: true,
+        width: 60,
+        height: 35,
+      }}
+    />
+    <p style={{ textAlign: "center" }}>{text}</p>
+  </div>
+);
 
 const PDCDataDisplay = () => {
   const [data, setData] = useState([]);
@@ -54,7 +69,7 @@ const PDCDataDisplay = () => {
   };
 
   const showQRCodes = (data) => {
-    setQrCodeData(data);
+    setQrCodeData(data.link);
     setOpenModal(true);
   };
 
@@ -139,7 +154,7 @@ const PDCDataDisplay = () => {
                           aria-label="QR"
                           size="small"
                           style={{ color: "navy" }}
-                          onClick={() => showQRCodes(row.link)}
+                          onClick={() => showQRCodes(row)}
                         >
                           <QrCodeIcon fontSize="small" />
                         </IconButton>
@@ -151,13 +166,6 @@ const PDCDataDisplay = () => {
                         >
                           <LaunchIcon fontSize="small" />
                         </IconButton>
-                        <IconButton
-                          aria-label="Sub-Assembly"
-                          size="small"
-                          style={{ color: "lightblue" }}
-                        >
-                          <LibraryAddIcon fontSize="small" />
-                        </IconButton>
                       </>
                     )}
                   </TableCell>
@@ -166,9 +174,21 @@ const PDCDataDisplay = () => {
           </TableBody>
         </Table>
         <Dialog open={openModal} onClose={handleCloseModal}>
-          <DialogTitle>QR Code</DialogTitle>
+          <DialogTitle style={{ textAlign: "center" }}>
+            <strong>QR Code</strong>
+          </DialogTitle>
           <DialogContent>
-            <QRCode value={qrCodeData} />
+            <QRCode
+              value={qrCodeData}
+              size={256}
+              imageSettings={{
+                text: "QR Code",
+                src: "Images/FE-logo.png",
+                excavate: true,
+                width: 60,
+                height: 35,
+              }}
+            />
           </DialogContent>
           <DialogActions>
             <Button onClick={handleCloseModal} color="primary">
