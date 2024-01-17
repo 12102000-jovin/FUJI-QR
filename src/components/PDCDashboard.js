@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import QRCode from "qrcode.react";
 import { useLocation } from "react-router-dom";
@@ -19,6 +19,7 @@ import {
 } from "@mui/material";
 import QrCodeIcon from "@mui/icons-material/QrCode";
 import LaunchIcon from "@mui/icons-material/Launch";
+import html2canvas from "html2canvas";
 
 const PDCDashboard = () => {
   const location = useLocation();
@@ -30,6 +31,8 @@ const PDCDashboard = () => {
   const [qrCodeData, setQrCodeData] = useState(null);
   const [showQrCode, setShowQrCode] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+
+  const captureRef = useRef(null);
 
   useEffect(() => {
     // Fetch sub-assemblies for the PDC based on the custom ID
@@ -79,7 +82,8 @@ const PDCDashboard = () => {
     }
   };
 
-  const showQrCodes = (link) => {
+  const showQrCodes = (link, name) => {
+    setSubAssemblyName(name);
     setQrCodeData(link);
     setOpenModal(true);
   };
@@ -90,6 +94,26 @@ const PDCDashboard = () => {
 
   const handleLinks = (link) => {
     window.location.href = link;
+  };
+
+  const captureImage = () => {
+    html2canvas(captureRef.current)
+      .then((canvas) => {
+        // Convert canvas to data URL
+        const imgData = canvas.toDataURL("image/png");
+
+        // Generate a unique filename
+        const fileName = `SubAssemblyQR_${customId}_${subAssemblyName}.png`;
+
+        // Create a download link with the specified filename
+        const a = document.createElement("a");
+        a.href = imgData;
+        a.download = fileName;
+        a.click();
+      })
+      .catch((error) => {
+        console.error("Error capturing image:", error);
+      });
   };
 
   return (
@@ -145,7 +169,9 @@ const PDCDashboard = () => {
                         aria-label="QR"
                         size="small"
                         style={{ color: "navy" }}
-                        onClick={() => showQrCodes(subAssembly.link)}
+                        onClick={() =>
+                          showQrCodes(subAssembly.link, subAssembly.name)
+                        }
                       >
                         {" "}
                         <QrCodeIcon fontSize="small" />
@@ -168,18 +194,37 @@ const PDCDashboard = () => {
                 <strong>QR Code</strong>
               </DialogTitle>
               <DialogContent>
-                <QRCode
-                  value={qrCodeData}
-                  size={256}
-                  imageSettings={{
-                    src: "Images/FE-logo.png",
-                    excavate: true,
-                    width: 60,
-                    height: 35,
-                  }}
-                />
+                <div ref={captureRef}>
+                  <QRCode
+                    value={qrCodeData}
+                    size={256}
+                    imageSettings={{
+                      src: "Images/FE-logo.png",
+                      excavate: true,
+                      width: 60,
+                      height: 35,
+                    }}
+                  />
+                  <p
+                    style={{
+                      color: "#043f9d",
+                      fontFamily: "Avenir, sans-serif",
+                      fontSize: "20px",
+                      fontWeight: "bold",
+                      textAlign: "center",
+                      marginTop: "5px",
+                    }}
+                  >
+                    {" "}
+                    {
+                      subAssemblies.find((sub) => sub.link === qrCodeData)?.name
+                    }{" "}
+                    - {customId}
+                  </p>
+                </div>
               </DialogContent>
               <DialogActions>
+                <Button onClick={() => captureImage()}> Download </Button>
                 <Button onClick={handleCloseModal} color="primary">
                   Close
                 </Button>

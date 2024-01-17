@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import QRCode from "qrcode.react";
 import moment from "moment";
+import html2canvas from "html2canvas";
 
 import {
   Table,
@@ -30,7 +31,7 @@ const CustomQRCode = ({ value, text }) => (
   <div>
     <QRCode
       value={value}
-      size={256}
+      size="400"
       imageSettings={{
         src: "Images/FE-logo.png",
         excavate: true,
@@ -53,6 +54,9 @@ const PDCDataDisplay = () => {
   const [showQrCode, setShowQrCode] = useState(false);
   const [openModal, setOpenModal] = useState(false);
 
+  const captureRef = useRef(null);
+  const [modalPdcID, setModalPdcID] = useState(null);
+
   useEffect(() => {
     fetchData();
   }, []);
@@ -68,8 +72,9 @@ const PDCDataDisplay = () => {
       });
   };
 
-  const showQRCodes = (data) => {
+  const showQRCodes = (data, row) => {
     setQrCodeData(data.link);
+    setModalPdcID(extractIdFromLink(data.link));
     setOpenModal(true);
   };
 
@@ -81,12 +86,38 @@ const PDCDataDisplay = () => {
     window.location.href = link;
   };
 
+  const extractIdFromLink = (link) => {
+    const match = link.match(/id=PDC(\d+)/);
+    return match ? `PDC${match[1]}` : null;
+  };
+
+  const captureImage = (pdcID) => {
+    html2canvas(captureRef.current)
+      .then((canvas) => {
+        // Convert canvas to data URL
+        const imgData = canvas.toDataURL("image/png");
+
+        // Generate a unique filename
+        const fileName = `PDCQR_${pdcID}.png`;
+
+        // Create a download link with the specified filename
+        const a = document.createElement("a");
+        a.href = imgData;
+        a.download = fileName;
+        a.click();
+      })
+      .catch((error) => {
+        console.error("Error capturing image:", error);
+      });
+  };
+
   return (
     <Paper style={{ margin: "32px" }}>
       <TableContainer>
         <Table>
           <TableHead style={{ backgroundColor: "#043f9d" }}>
-            <TableCell style={{ width: "60%", color: "white" }}>Link</TableCell>
+            <TableCell style={{ width: "50%", color: "white" }}>Link</TableCell>
+            <TableCell style={{ width: "10%", color: "white" }}>PDC</TableCell>
             <TableCell style={{ width: "20%", color: "white" }}>
               Generated Date{" "}
             </TableCell>
@@ -109,6 +140,8 @@ const PDCDataDisplay = () => {
                       row.link
                     )}
                   </TableCell>
+
+                  <TableCell>{extractIdFromLink(row.link)}</TableCell>
                   <TableCell>
                     {moment(row.generatedDate)
                       .tz("Australia/Sydney")
@@ -178,19 +211,36 @@ const PDCDataDisplay = () => {
             <strong>QR Code</strong>
           </DialogTitle>
           <DialogContent>
-            <QRCode
-              value={qrCodeData}
-              size={256}
-              imageSettings={{
-                text: "QR Code",
-                src: "Images/FE-logo.png",
-                excavate: true,
-                width: 60,
-                height: 35,
-              }}
-            />
+            <div ref={captureRef}>
+              <QRCode
+                value={qrCodeData}
+                size={256}
+                imageSettings={{
+                  text: "QR Code",
+                  src: "Images/FE-logo.png",
+                  excavate: true,
+                  width: 60,
+                  height: 35,
+                }}
+              />
+              <p
+                style={{
+                  color: "#043f9d",
+                  fontFamily: "Avenir, sans-serif",
+                  fontSize: "20px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  marginTop: "5px",
+                }}
+              >
+                {" "}
+                {qrCodeData ? extractIdFromLink(qrCodeData) : "N/A"}{" "}
+              </p>
+            </div>
           </DialogContent>
+
           <DialogActions>
+            <Button onClick={() => captureImage(modalPdcID)}>Download</Button>
             <Button onClick={handleCloseModal} color="primary">
               Close
             </Button>

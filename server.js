@@ -34,3 +34,6 @@ app.use("/api/qrcodes", qrRoutes);
 
 const subAssemblyRoutes = require("./src/routes/subAssemblyRouter");
 app.use("/api/subAssembly", subAssemblyRoutes);
+
+const componentRoutes = require("./src/routes/componentRouter");
+app.use("/api/component", componentRoutes);

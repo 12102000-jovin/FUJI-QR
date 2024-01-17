@@ -1,5 +1,6 @@
 import PDCDataDisplay from "./PDCDataDisplay";
 import axios from "axios";
+import "moment-timezone";
 
 const PDCQRList = () => {
   const deleteAll = () => {

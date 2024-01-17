@@ -16,17 +16,6 @@ const PDC_QRCode = () => {
     setImageData({});
   }, [numberOfCodes, startingNumber]);
 
-  useEffect(() => {
-    const generateImages = () => {
-      qrCodes.forEach((code) => {
-        const ref = document.getElementById(code.pdcID);
-        generateImage(code.pdcID, ref);
-      });
-    };
-
-    generateImages();
-  }, [qrCodes]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -48,22 +37,28 @@ const PDC_QRCode = () => {
       );
 
       setQRCodes((prevQRCodes) => {
-        setImageData({});
-        return response.data.map((code, index) => ({
+        const newQRCodes = response.data.map((code, index) => ({
           ...code,
           displayNumber: prevQRCodes.length + index + 1,
           pdcID: `PDC000${Number(startingNumber) + index}`,
         }));
+
+        // Use the state updater callback to ensure that state is properly updated
+        setImageData({});
+        setNumberOfCodes(""); // Reset numberOfCodes to 0
+        setStartingNumber("");
+
+        return newQRCodes;
       });
     } catch (error) {
       console.error("Error saving QR codes:", error);
     }
   };
 
-  const generateImage = (pdcID, ref) => {
+  const generateImage = (pdcID, ref, canvasWidth) => {
     if (ref && pdcID && !imageData[pdcID]) {
       const options = {
-        width: 300, // Set the width of the canvas
+        width: canvasWidth, // Set the width of the canvas
       };
 
       html2canvas(ref, options).then((canvas) => {
@@ -162,13 +157,13 @@ const PDC_QRCode = () => {
               }}
             >
               <div
-                id={code.pdcID}
+                ref={(ref) => generateImage(code.pdcID, ref)}
                 style={{
                   color: "#043f9d",
                   fontFamily: "Avenir, sans-serif",
                   fontSize: "20px",
                   fontWeight: "bold",
-                  textAlign: "center",
+                  textAlign: "center", // Center the text
                 }}
               >
                 <div>
@@ -199,7 +194,7 @@ const PDC_QRCode = () => {
                   <img
                     src={imageData[code.pdcID]}
                     alt={`Converted ${code.pdcID}`}
-                    style={{ display: "block", margin: "0 auto" }}
+                    style={{ display: "none", margin: "0 auto" }}
                   />
                   <button onClick={() => handleDownload(code.pdcID)}>
                     Download

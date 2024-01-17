@@ -10,6 +10,12 @@ const subAssemblySchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  components: [
+    {
+      type: mongoose.Types.ObjectId,
+      ref: "Component",
+    },
+  ],
 });
 
 // Manually create the unique index on the "link" field
